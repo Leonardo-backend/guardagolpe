@@ -66,7 +66,7 @@ Passos padrão, **não testados numa instância AWS** por mim:
 
 ```bash
 sudo apt update && sudo apt install -y python3-venv git
-git clone <URL-DESTE-REPOSITORIO> guardagolpe && cd guardagolpe
+git clone https://github.com/Leonardo-backend/guardagolpe.git && cd guardagolpe
 python3 -m venv .venv
 .venv/bin/pip install flask requests gunicorn
 cp .env.example .env && nano .env          # coloque o token e as variáveis da seção acima
