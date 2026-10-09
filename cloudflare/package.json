@@ -1,0 +1,10 @@
+{
+  "name": "guardagolpe-cloudflare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "dev": "wrangler pages dev public --ai=AI",
+    "deploy": "wrangler pages deploy public --project-name guardagolpe"
+  }
+}

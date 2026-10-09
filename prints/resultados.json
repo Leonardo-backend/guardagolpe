@@ -1,0 +1,45 @@
+{
+  "data": "2026-10-05",
+  "provedor": "api.cloudflare.com",
+  "modelo": "clef-flash",
+  "modelo_respondido": "clef-flash",
+  "simulado": false,
+  "exemplos": [
+    {
+      "id": "boleto",
+      "titulo": "Boleto falso",
+      "esperado": "perigo",
+      "veredito": "perigo",
+      "tipo": "boleto_falso",
+      "tipo_rotulo": "Boleto falso",
+      "pede_dados": 0.9606,
+      "risco": 4,
+      "confianca": 0.9542,
+      "confianca_risco": 0.3134
+    },
+    {
+      "id": "banco",
+      "titulo": "Aviso do banco",
+      "esperado": "perigo",
+      "veredito": "perigo",
+      "tipo": "phishing_bancario",
+      "tipo_rotulo": "Falso aviso do banco",
+      "pede_dados": 0.9691,
+      "risco": 4,
+      "confianca": 0.9532,
+      "confianca_risco": 0.2636
+    },
+    {
+      "id": "legitima",
+      "titulo": "Mensagem legítima",
+      "esperado": "segura",
+      "veredito": "segura",
+      "tipo": "mensagem_legitima",
+      "tipo_rotulo": "Mensagem legítima",
+      "pede_dados": 0.0096,
+      "risco": 1,
+      "confianca": 0.7807,
+      "confianca_risco": 0.3729
+    }
+  ]
+}

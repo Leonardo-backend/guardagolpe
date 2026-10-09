@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>GuardaGolpe</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237c9cff' d='M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z'/%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #090b0f;
+    --surface: #10131a;
+    --surface-2: #161a23;
+    --borda: #212733;
+    --texto: #e8ecf3;
+    --suave: #8b95a7;
+    --marca: #7c9cff;
+    --nivel: #8b95a7;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(1200px 500px at 85% -10%, rgba(124, 156, 255, .09), transparent 60%), var(--bg);
+    color: var(--texto);
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+  }
+  svg { display: block; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  /* ---------- barra superior ---------- */
+  .site { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--borda); }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: var(--marca); color: #0a0d14; display: grid; place-items: center; flex: none; }
+  .logo svg { width: 17px; height: 17px; }
+  .marca { font-weight: 700; letter-spacing: -.01em; }
+  .tag { color: var(--suave); font-size: .85rem; padding-left: 12px; border-left: 1px solid var(--borda); }
+  .direita { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .pilula { font-size: .78rem; color: var(--suave); border: 1px solid var(--borda); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .pilula strong { color: var(--texto); font-weight: 600; }
+  #simulado { font-size: .78rem; font-weight: 700; color: #1a1300; background: #fbbf24; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+
+  /* ---------- duas colunas, altura da janela ---------- */
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px 20px 20px; min-height: 0; max-width: 1240px; width: 100%; margin: 0 auto; }
+  .painel { background: var(--surface); border: 1px solid var(--borda); border-radius: 18px; padding: 18px; min-height: 0; display: flex; flex-direction: column; }
+  .cab { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .cab h2 { margin: 0; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); }
+  #contador { font-size: .78rem; color: var(--suave); }
+
+  /* ---------- entrada ---------- */
+  textarea {
+    flex: 1; min-height: 120px; width: 100%; resize: none; padding: 14px;
+    background: var(--surface-2); color: var(--texto); border: 1px solid var(--borda); border-radius: 14px;
+    font: inherit; font-size: 1rem; line-height: 1.55;
+  }
+  textarea::placeholder { color: #5d677a; }
+  textarea:focus, button:focus-visible { outline: 2px solid color-mix(in srgb, var(--marca) 60%, transparent); outline-offset: 2px; border-color: var(--marca); }
+  .rodape-entrada { margin-top: 14px; display: grid; gap: 12px; }
+  .exemplos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .exemplos span { color: var(--suave); font-size: .82rem; margin-right: 2px; }
+  .chip { background: transparent; border: 1px solid var(--borda); padding: 5px 12px; border-radius: 999px; font-size: .84rem; color: var(--texto); transition: border-color .15s, background .15s; }
+  .chip:hover { border-color: var(--marca); background: color-mix(in srgb, var(--marca) 10%, transparent); }
+  .principal {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 0; border-radius: 14px; padding: 13px 20px; font-weight: 700; color: #0a0d14; background: var(--marca);
+    transition: filter .15s, transform .1s;
+  }
+  .principal:hover:not(:disabled) { filter: brightness(1.08); }
+  .principal:active:not(:disabled) { transform: translateY(1px); }
+  .principal:disabled { opacity: .7; cursor: progress; }
+  .giro { width: 16px; height: 16px; border-radius: 50%; border: 3px solid rgba(10, 13, 20, .3); border-top-color: #0a0d14; animation: gira .8s linear infinite; display: none; }
+  .principal.carregando .giro { display: block; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .giro { animation-duration: 2.4s; } .barra i { transition: none; } }
+
+  /* ---------- saída ---------- */
+  .saida-corpo { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--borda) transparent; }
+  #vazio { height: 100%; display: grid; align-content: center; gap: 18px; }
+  #vazio .passo-linha { display: flex; gap: 14px; align-items: flex-start; color: var(--suave); font-size: .92rem; }
+  #vazio strong { display: block; color: var(--texto); font-size: .98rem; margin-bottom: 1px; }
+  .num { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--borda); color: var(--marca); font-size: .8rem; font-weight: 700; display: grid; place-items: center; flex: none; }
+  #erro { display: none; color: #fca5a5; background: rgba(248, 113, 113, .08); border: 1px solid rgba(248, 113, 113, .35); padding: 12px 14px; border-radius: 12px; font-weight: 600; }
+  #resultado { display: none; }
+
+  .veredito { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; margin-bottom: 12px;
+    background: color-mix(in srgb, var(--nivel) 11%, var(--surface)); border: 1px solid color-mix(in srgb, var(--nivel) 40%, var(--borda)); }
+  .icone { width: 44px; height: 44px; border-radius: 50%; background: var(--nivel); color: #0a0d14; display: grid; place-items: center; flex: none; }
+  .icone svg { width: 24px; height: 24px; display: none; }
+  #resultado[data-nivel="segura"] .i-segura, #resultado[data-nivel="atencao"] .i-atencao, #resultado[data-nivel="perigo"] .i-perigo { display: block; }
+  .veredito small { display: block; color: var(--suave); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+  .veredito h3 { margin: 0; font-size: 1.3rem; line-height: 1.2; color: var(--nivel); }
+  .ghost { margin-left: auto; background: transparent; border: 1px solid var(--borda); color: var(--suave); padding: 6px 12px; border-radius: 10px; font-size: .8rem; white-space: nowrap; transition: color .15s, border-color .15s; }
+  .ghost:hover { color: var(--texto); border-color: var(--suave); }
+
+  .grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .metrica { background: var(--surface-2); border: 1px solid var(--borda); border-radius: 12px; padding: 10px 12px; }
+  .metrica small { color: var(--suave); display: block; font-size: .74rem; }
+  .metrica strong { display: block; font-size: 1.05rem; margin: 1px 0 7px; }
+  .barra { height: 5px; border-radius: 99px; background: var(--borda); overflow: hidden; }
+  .barra i { display: block; height: 100%; width: 0; background: var(--nivel); border-radius: 99px; transition: width .5s ease; }
+  .segmentos { display: flex; gap: 4px; }
+  .segmentos i { flex: 1; height: 5px; border-radius: 99px; background: var(--borda); }
+  .segmentos i.on { background: var(--nivel); }
+
+  .aviso { display: flex; gap: 10px; font-size: .88rem; color: #fcd34d; background: rgba(251, 191, 36, .08); border: 1px solid rgba(251, 191, 36, .3); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; }
+  .aviso::before { content: "!"; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #fbbf24; color: #1a1300; font-weight: 800; font-size: .75rem; display: grid; place-items: center; margin-top: 1px; }
+
+  .secao { margin: 4px 0 8px; font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; color: var(--suave); font-weight: 700; }
+  #orientacao { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #orientacao li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--borda); border-radius: 12px; font-size: .92rem; }
+  #orientacao li::before { content: ""; flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; background: var(--nivel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='%230a0d14' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' d='m5.5 10.5 3 3 6-6.5'/%3E%3C/svg%3E") center/13px no-repeat; }
+
+  /* ---------- janela com a requisição ---------- */
+  dialog { width: min(720px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid var(--borda); border-radius: 16px; background: var(--surface); color: var(--texto); }
+  dialog::backdrop { background: rgba(0, 0, 0, .65); backdrop-filter: blur(3px); }
+  .dlg-cab { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--borda); font-weight: 600; font-size: .92rem; }
+  dialog pre { margin: 0; padding: 16px; overflow: auto; max-height: calc(100dvh - 130px); white-space: pre-wrap; overflow-wrap: anywhere; font: .76rem/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; color: #cbd5e1; }
+
+  /* ---------- telas baixas (notebooks pequenos): compacta para continuar sem rolagem ---------- */
+  @media (max-height: 700px) and (min-width: 861px) {
+    .site { padding: 8px 20px; }
+    .layout { padding: 10px 20px 12px; gap: 12px; }
+    .painel { padding: 14px; }
+    .cab { margin-bottom: 8px; }
+    .veredito { padding: 10px 12px; margin-bottom: 8px; }
+    .icone { width: 38px; height: 38px; }
+    .icone svg { width: 20px; height: 20px; }
+    .veredito h3 { font-size: 1.15rem; }
+    .grade { gap: 6px; margin-bottom: 8px; }
+    .metrica { padding: 7px 11px; }
+    .metrica strong { margin: 0 0 5px; font-size: 1rem; }
+    .secao { margin: 2px 0 6px; }
+    #orientacao { gap: 4px; }
+    #orientacao li { padding: 5px 11px; font-size: .88rem; }
+    .rodape-entrada { margin-top: 10px; gap: 10px; }
+    .principal { padding: 11px 18px; }
+  }
+
+  /* ---------- telas pequenas: empilha e libera a rolagem ---------- */
+  @media (max-width: 860px), (max-height: 560px) {
+    body { display: block; height: auto; overflow: auto; }
+    .layout { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+    textarea { min-height: 170px; }
+    .saida-corpo { overflow: visible; }
+    .tag { display: none; }
+    .site { padding: 10px 12px; }
+  }
+  @media (max-width: 420px) { .grade { grid-template-columns: minmax(0, 1fr); } .ghost { display: none; } }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/></svg></div>
+  <span class="marca">GuardaGolpe</span>
+  <span class="tag">Choice · Noul · Score</span>
+  <div class="direita">
+    
+    <span class="pilula">Modelo <strong>clef-flash</strong></span>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="painel" aria-label="Mensagem">
+    <div class="cab"><h2>Mensagem recebida</h2><span id="contador">0 / 4000</span></div>
+    <textarea id="mensagem" maxlength="4000" aria-label="Texto da mensagem suspeita" placeholder="Cole aqui o SMS, WhatsApp ou e-mail que você recebeu..."></textarea>
+    <div class="rodape-entrada">
+      <div class="exemplos"><span>Exemplos:</span><span id="botoes" style="display:contents"></span></div>
+      <button id="analisar" class="principal" type="button"><span class="giro" aria-hidden="true"></span><span id="rotulo-botao">Analisar mensagem</span></button>
+    </div>
+  </section>
+
+  <section class="painel" aria-label="Resultado" aria-live="polite">
+    <div class="cab"><h2>Resultado</h2></div>
+    <div class="saida-corpo">
+      <div id="vazio">
+        <div class="passo-linha"><span class="num">1</span><div><strong>Cole a mensagem</strong>O texto vai ao modelo; a chave de API fica só no servidor.</div></div>
+        <div class="passo-linha"><span class="num">2</span><div><strong>O modelo responde 3 perguntas</strong>Tipo de golpe (Choice), pede dados? (Noul) e risco (Score).</div></div>
+        <div class="passo-linha"><span class="num">3</span><div><strong>O sistema decide</strong>Mostra o veredito e o que fazer, com a confiança do modelo.</div></div>
+      </div>
+
+      <div id="erro" role="alert"></div>
+
+      <div id="resultado" data-nivel="segura">
+        <div class="veredito">
+          <div class="icone">
+            <svg class="i-segura" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+            <svg class="i-atencao" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.8 20h18.4z"/><path d="M12 10v4.5M12 17.6v.1"/></svg>
+            <svg class="i-perigo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </div>
+          <div><small>Veredito</small><h3 id="titulo"></h3></div>
+          <button id="ver-req" class="ghost" type="button">Ver requisição</button>
+        </div>
+
+        <div class="grade">
+          <div class="metrica"><small>Tipo de golpe · Choice</small><strong id="tipo"></strong></div>
+          <div class="metrica"><small>Pede dados ou dinheiro · Noul</small><strong id="pede"></strong><div class="barra"><i id="barra-pede"></i></div></div>
+          <div class="metrica"><small>Nível de risco · Score</small><strong id="risco"></strong><div id="barras" class="segmentos"></div></div>
+          <div class="metrica"><small>Confiança no tipo · Choice</small><strong id="confianca"></strong><div class="barra"><i id="barra-conf"></i></div></div>
+        </div>
+
+        <div id="avisos"></div>
+
+        <div class="secao">O que fazer</div>
+        <ul id="orientacao"></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg" aria-label="Requisição enviada ao modelo">
+  <div class="dlg-cab"><span>O que foi enviado ao modelo (sem a chave)</span><button id="fechar" class="ghost" type="button" style="margin:0">Fechar</button></div>
+  <pre id="requisicao"></pre>
+</dialog>
+
+<script>
+const EXEMPLOS = [{"esperado": "perigo", "id": "boleto", "texto": "URGENTE: seu boleto do cart\u00e3o est\u00e1 vencido e seu nome ser\u00e1 negativado hoje. Pague agora pelo link https://segunda-via-boleto.xyz/pagar para evitar protesto. Atenciosamente, Central de Cobran\u00e7a.", "titulo": "Boleto falso"}, {"esperado": "perigo", "id": "banco", "texto": "Banco Nacional: detectamos um acesso suspeito na sua conta. Para evitar o bloqueio, confirme sua senha e o c\u00f3digo enviado por SMS em http://bn-seguranca-app.com/confirmar", "titulo": "Aviso do banco"}, {"esperado": "segura", "id": "legitima", "texto": "Oi! Aqui \u00e9 da secretaria da Fatec. A aula de sexta-feira foi remarcada para as 19h na sala 12. Nenhuma a\u00e7\u00e3o \u00e9 necess\u00e1ria, s\u00f3 avisando.", "titulo": "Mensagem leg\u00edtima"}];
+const $ = (id) => document.getElementById(id);
+const caixa = $("mensagem");
+
+function atualizarContador() { $("contador").textContent = caixa.value.length + " / 4000"; }
+caixa.addEventListener("input", atualizarContador);
+
+EXEMPLOS.forEach((ex) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "chip";
+  b.textContent = ex.titulo;
+  b.addEventListener("click", () => { caixa.value = ex.texto; atualizarContador(); });
+  $("botoes").appendChild(b);
+});
+
+function lista(el, itens) {
+  el.replaceChildren(...itens.map((t) => { const li = document.createElement("li"); li.textContent = t; return li; }));
+}
+
+// Tons mais claros para o tema escuro (a paleta do servidor serve ao PDF).
+const COR_ESCURO = { segura: "#34d399", atencao: "#fbbf24", perigo: "#f87171" };
+
+function mostrar(d) {
+  const v = d.veredito, a = d.analise, conf = a.confianca;
+  const card = $("resultado");
+  card.dataset.nivel = v.nivel;
+  card.style.setProperty("--nivel", COR_ESCURO[v.nivel] || v.cor);
+  $("titulo").textContent = v.titulo;
+  $("tipo").textContent = d.tipo_rotulo;
+  $("pede").textContent = Math.round(a.pede_dados * 100) + "%";
+  $("risco").textContent = a.risco + " / 5";
+  $("barras").replaceChildren(...[1, 2, 3, 4, 5].map((n) => {
+    const i = document.createElement("i");
+    if (n <= a.risco) i.className = "on";
+    return i;
+  }));
+  $("confianca").textContent = conf === null ? "não informada" : Math.round(conf * 100) + "%";
+  $("avisos").replaceChildren(...v.avisos.map((t) => { const p = document.createElement("div"); p.className = "aviso"; p.textContent = t; return p; }));
+  lista($("orientacao"), v.orientacao);
+  const rq = d.requisicao; // o servidor ordena as chaves; aqui mostramos model, state e questions, nessa ordem
+  $("requisicao").textContent = JSON.stringify({ model: rq.model, state: rq.state, questions: rq.questions }, null, 2);
+  $("vazio").style.display = "none";
+  card.style.display = "block";
+  void card.offsetWidth; // força o layout com largura 0 para a barra animar, sem depender de requestAnimationFrame (pausado em aba oculta)
+  $("barra-pede").style.width = Math.round(a.pede_dados * 100) + "%";
+  $("barra-conf").style.width = conf === null ? "0%" : Math.round(conf * 100) + "%";
+}
+
+$("ver-req").addEventListener("click", () => $("dlg").showModal());
+$("fechar").addEventListener("click", () => $("dlg").close());
+$("dlg").addEventListener("click", (e) => { if (e.target === $("dlg")) $("dlg").close(); });
+
+$("analisar").addEventListener("click", async () => {
+  const botao = $("analisar");
+  $("erro").style.display = "none";
+  $("resultado").style.display = "none";
+  $("barra-pede").style.width = "0";
+  $("barra-conf").style.width = "0";
+  botao.disabled = true;
+  botao.classList.add("carregando");
+  $("rotulo-botao").textContent = "Consultando o modelo...";
+  try {
+    const r = await fetch("/analisar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensagem: caixa.value }),
+    });
+    const dados = await r.json();
+    if (!r.ok) throw new Error(dados.erro || "Erro inesperado.");
+    mostrar(dados);
+  } catch (e) {
+    $("vazio").style.display = "none";
+    $("erro").textContent = e.message;
+    $("erro").style.display = "block";
+  } finally {
+    botao.disabled = false;
+    botao.classList.remove("carregando");
+    $("rotulo-botao").textContent = "Analisar mensagem";
+  }
+});
+</script>
+</body>
+</html>
