@@ -23,11 +23,12 @@ segue o do JEV (TypeSafe), mas **os testes reais foram feitos com o Clef**, não
 | Caminho | O que é |
 |---|---|
 | `app.py` | Servidor Flask: `GET /` (página) e `POST /analisar` |
+| `wsgi.py` | Ponto de entrada para o gunicorn (carrega o `.env` e cria o app) |
 | `jev.py` | Cliente do modelo: monta a requisição, chama a API, lê e valida a resposta |
 | `decisao.py` | Regras que transformam a resposta em veredito e orientação |
 | `templates/index.html` | A página (tema escuro, sem rolagem no desktop) |
 | `exemplos.py`, `rodar_exemplos.py` | Mensagens de exemplo e script que faz a consulta real e salva `prints/resultados.json` |
-| `tests/` | 63 testes em Python |
+| `tests/` | 65 testes em Python |
 | `cloudflare/` | Versão online no Cloudflare Pages (Function em JavaScript, 13 testes) |
 | `gerar_site_cloudflare.py` | Gera a página e as fixtures de paridade da versão Cloudflare a partir do Flask |
 
@@ -37,7 +38,7 @@ segue o do JEV (TypeSafe), mas **os testes reais foram feitos com o Clef**, não
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt    # Linux/macOS: .venv/bin/python
 cp .env.example .env                                         # e preencha o .env (veja abaixo)
-.venv/Scripts/python -m pytest -q                            # 63 testes
+.venv/Scripts/python -m pytest -q                            # 65 testes
 .venv/Scripts/python app.py                                  # http://127.0.0.1:5000
 ```
 
@@ -70,7 +71,7 @@ git clone https://github.com/Leonardo-backend/guardagolpe.git && cd guardagolpe
 python3 -m venv .venv
 .venv/bin/pip install flask requests gunicorn
 cp .env.example .env && nano .env          # coloque o token e as variáveis da seção acima
-.venv/bin/gunicorn -b 0.0.0.0:8000 "app:criar_app()"
+.venv/bin/gunicorn -b 0.0.0.0:8000 wsgi:application
 ```
 
 Depois, no *Security Group* da instância, libere a porta **8000** (entrada TCP) só para o IP de quem vai ver,
